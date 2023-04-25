@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
+using Newtonsoft.Json.Linq;
 
 namespace Leauge_Auto_Accept
 {
@@ -110,7 +111,7 @@ namespace Leauge_Auto_Accept
                     sentChatMessages = false;
                 }
                 lastChatRoom = currentChatRoom;
-
+                LaneSettings laneSettings = null;
                 if (pickedChamp && lockedChamp && pickedBan && lockedBan && pickedSpell1 && pickedSpell2 && sentChatMessages)
                 {
                     // Sleep a little if we already did everything we needed to do
@@ -120,6 +121,38 @@ namespace Leauge_Auto_Accept
                 {
                     // Get more needed data from the current champ select
                     string localPlayerCellId = currentChampSelect[1].Split("localPlayerCellId\":")[1].Split(',')[0];
+
+                    JObject champSelectObj = JObject.Parse(currentChampSelect[1]);
+
+                    foreach (JObject cellObj in champSelectObj["myTeam"])
+                    {
+                        if ((string)cellObj["cellId"] == localPlayerCellId)
+                        {
+                            string assignedPosition = (string)cellObj["assignedPosition"];
+                            switch (assignedPosition)
+                            {
+                                
+                                case "jungle":
+                                    laneSettings = Settings.jungleLaneSettings;
+                                    break;
+                                case "utility":
+                                    laneSettings = Settings.supportLaneSettings;
+                                    break;
+                                case "middle":
+                                    laneSettings = Settings.midLaneSettings;
+                                    break;
+                                case "top":
+                                    laneSettings = Settings.topLaneSettings;
+                                    break;
+                                case "bottom":
+                                    laneSettings = Settings.botLaneSettings;
+                                    break;
+                                
+                            }
+                            break;
+                        }
+                    }
+
 
                     if (Settings.currentChamp[1] == "0")
                     {
@@ -153,7 +186,7 @@ namespace Leauge_Auto_Accept
 
                     if (!pickedChamp || !lockedChamp || !pickedBan || !lockedBan)
                     {
-                        handleChampSelectActions(currentChampSelect, localPlayerCellId);
+                        handleChampSelectActions(laneSettings, currentChampSelect, localPlayerCellId);
                     }
                     if (!sentChatMessages)
                     {
@@ -161,7 +194,7 @@ namespace Leauge_Auto_Accept
                     }
                     if (!pickedSpell1)
                     {
-                        string[] champSelectAction = LCU.clientRequest("PATCH", "lol-champ-select/v1/session/my-selection", "{\"spell1Id\":" + Settings.currentSpell1[1] + "}");
+                        string[] champSelectAction = LCU.clientRequest("PATCH", "lol-champ-select/v1/session/my-selection", "{\"spell1Id\":" + laneSettings.Spell1Id + "}");
                         if (champSelectAction[0] == "204")
                         {
                             pickedSpell1 = true;
@@ -169,7 +202,7 @@ namespace Leauge_Auto_Accept
                     }
                     if (!pickedSpell2)
                     {
-                        string[] champSelectAction = LCU.clientRequest("PATCH", "lol-champ-select/v1/session/my-selection", "{\"spell2Id\":" + Settings.currentSpell2[1] + "}");
+                        string[] champSelectAction = LCU.clientRequest("PATCH", "lol-champ-select/v1/session/my-selection", "{\"spell2Id\":" + laneSettings.Spell2Id + "}");
                         if (champSelectAction[0] == "204")
                         {
                             pickedSpell2 = true;
@@ -200,7 +233,7 @@ namespace Leauge_Auto_Accept
             sentChatMessages = true;
         }
 
-        private static void handleChampSelectActions(string[] currentChampSelect, string localPlayerCellId)
+        private static void handleChampSelectActions(LaneSettings laneSettings, string[] currentChampSelect, string localPlayerCellId)
         {
             string csActs = currentChampSelect[1].Split("actions\":[[{")[1].Split("}]],")[0];
             csActs = csActs.Replace("}],[{", "},{");
@@ -211,17 +244,16 @@ namespace Leauge_Auto_Accept
                 string ActCctorCellId = act.Split("actorCellId\":")[1].Split(',')[0];
                 string ActCompleted = act.Split("completed\":")[1].Split(',')[0];
                 string ActType = act.Split("type\":\"")[1].Split('"')[0];
-                string championId = act.Split("championId\":")[1].Split(',')[0];
                 string actId = act.Split(",\"id\":")[1].Split(',')[0];
                 string ActIsInProgress = act.Split("isInProgress\":")[1].Split(',')[0];
 
                 if (ActCctorCellId == localPlayerCellId && ActCompleted == "false" && ActType == "pick")
                 {
-                    handlePickAction(actId, championId, ActIsInProgress, currentChampSelect);
+                    handlePickAction(actId, laneSettings.ChampId, ActIsInProgress, currentChampSelect);
                 }
                 else if (ActCctorCellId == localPlayerCellId && ActCompleted == "false" && ActType == "ban")
                 {
-                    handleBanAction(actId, championId, ActIsInProgress, currentChampSelect);
+                    handleBanAction(actId, laneSettings.BanId, ActIsInProgress, currentChampSelect);
                 }
             }
         }
@@ -231,7 +263,7 @@ namespace Leauge_Auto_Accept
             if (!pickedChamp)
             {
                 // Hover champion when champ select starts, no need to check for whenever it's my turn or not to pick it
-                hoverChampion(actId, Settings.currentChamp[1], "pick");
+                hoverChampion(actId, championId, "pick");
             }
 
             if (ActIsInProgress == "true")

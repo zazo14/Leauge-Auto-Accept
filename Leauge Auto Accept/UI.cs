@@ -143,7 +143,7 @@ namespace Leauge_Auto_Accept
             // Print logo
             for (int i = 0; i < logo.Length; i++)
             {
-                Print.printCentered(logo[i], SizeHandler.HeightCenter - 12 + i);
+                Print.printCentered(logo[i], SizeHandler.HeightCenter - 13 + i);
             }
 
             // Define options
@@ -164,10 +164,15 @@ namespace Leauge_Auto_Accept
                 MainLogic.isAutoAcceptOn ? "Enabled" : "Disabled"
             };
 
+            Print.printCentered(Settings.topLaneSettings.ChampName);
+            Print.printCentered(Settings.topLaneSettings.BanName);
+            Print.printCentered(Settings.topLaneSettings.Spell1Name);
+            Print.printCentered(Settings.topLaneSettings.Spell2Name);
+
             // Print options
             for (int i = 0; i < optionName.Length; i++)
             {
-                Print.printCentered(addDotsInBetween(optionName[i], optionValue[i]), topPad + i);
+                Print.printCentered(optionName[i]);
             }
 
             // Print the two bottom buttons that are not actaul settings

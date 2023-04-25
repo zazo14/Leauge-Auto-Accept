@@ -9,7 +9,7 @@ namespace Leauge_Auto_Accept
     internal class Settings
     {
 
-
+        
         public static LaneSettings topLaneSettings = new LaneSettings();
         public static LaneSettings botLaneSettings = new LaneSettings();
         public static LaneSettings supportLaneSettings = new LaneSettings();
@@ -171,16 +171,20 @@ namespace Leauge_Auto_Accept
                     laneSettings = jungleLaneSettings;
                     break;
                 case "mid":
+                case "middle":
                     laneSettings = midLaneSettings;
                     break;
                 case "adc":
+                case "bot":
+                case "bottom":
                     laneSettings = botLaneSettings;
                     break;
                 case "support":
+                case "supp":
                     laneSettings = supportLaneSettings;
                     break;
                 default:
-                    laneSettings = topLaneSettings;
+                    Console.WriteLine("stoopid, wrong lane");
                     break;
             }
             return laneSettings;
