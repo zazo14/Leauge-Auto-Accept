@@ -8,6 +8,7 @@ namespace Leauge_Auto_Accept
 {
     public class LaneSettings
     {
+        public string Lane { get; set; }
         public string ChampName { get; set; }
         public string ChampId { get; set; }
         public string BanName { get; set; }
@@ -17,8 +18,9 @@ namespace Leauge_Auto_Accept
         public string Spell2Name { get; set; }
         public string Spell2Id { get; set; }
 
-        public LaneSettings(string champName = "None", string champId = "0", string banName = "None", string banId = "0", string spell1Name = "None", string spell1Id = "0", string spell2Name = "None", string spell2Id = "0")
+        public LaneSettings(string lane = "Top", string champName = "None", string champId = "0", string banName = "None", string banId = "0", string spell1Name = "None", string spell1Id = "0", string spell2Name = "None", string spell2Id = "0")
         {
+            Lane = lane;
             ChampName = champName;
             ChampId = champId;
             BanName = banName;

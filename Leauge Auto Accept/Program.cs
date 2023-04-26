@@ -30,8 +30,13 @@ namespace Leauge_Auto_Accept
             // Set output to UTF8
             Console.OutputEncoding = Encoding.UTF8;
 
-            // Attempt to load existing settings
-            Settings.loadSettings();
+            Settings settings = new Settings();
+            foreach (LaneSettings laneSettings in settings.laneSettingsList)
+            {
+                Settings.loadSettings(laneSettings);
+            }
+
+
 
             Updater.initialize();
 

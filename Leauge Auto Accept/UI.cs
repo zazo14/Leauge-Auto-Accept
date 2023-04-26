@@ -28,6 +28,8 @@ namespace Leauge_Auto_Accept
         public static int currentPage = 0;
         public static int totalPages = 0;
 
+        public static string selectedLane = "Top";
+
         public static void initializingWindow()
         {
             Print.canMovePos = false;
@@ -143,11 +145,12 @@ namespace Leauge_Auto_Accept
             // Print logo
             for (int i = 0; i < logo.Length; i++)
             {
-                Print.printCentered(logo[i], SizeHandler.HeightCenter - 13 + i);
+                Print.printCentered(logo[i], SizeHandler.HeightCenter - 9 + i);
             }
 
             // Define options
             string[] optionName = {
+                "Select a lane",
                 "Select a champion",
                 "Select a ban",
                 "Select summoner spell 1",
@@ -155,24 +158,25 @@ namespace Leauge_Auto_Accept
                 "Instant chat messages",
                 "Enable auto accept"
             };
+
+            LaneSettings currentLaneSettings = Settings.getLaneSettings(UI.selectedLane);
+
             string[] optionValue = {
-                Settings.currentChamp[0],
-                Settings.currentBan[0],
-                Settings.currentSpell1[0],
-                Settings.currentSpell2[0],
+                selectedLane,
+                currentLaneSettings.ChampName,
+                currentLaneSettings.BanName,
+                currentLaneSettings.Spell1Name,
+                currentLaneSettings.Spell2Name,
                 Settings.chatMessagesEnabled ? "Enabled, " + Settings.chatMessages.Count : "Disabled",
                 MainLogic.isAutoAcceptOn ? "Enabled" : "Disabled"
             };
 
-            Print.printCentered(Settings.topLaneSettings.ChampName);
-            Print.printCentered(Settings.topLaneSettings.BanName);
-            Print.printCentered(Settings.topLaneSettings.Spell1Name);
-            Print.printCentered(Settings.topLaneSettings.Spell2Name);
+            
 
             // Print options
             for (int i = 0; i < optionName.Length; i++)
             {
-                Print.printCentered(optionName[i]);
+                Print.printCentered(addDotsInBetween(optionName[i], optionValue[i]), topPad + i);
             }
 
             // Print the two bottom buttons that are not actaul settings
@@ -189,7 +193,7 @@ namespace Leauge_Auto_Accept
 
         public static void toggleAutoAcceptSettingUI()
         {
-            Print.printWhenPossible(MainLogic.isAutoAcceptOn ? ". Enabled" : " Disabled", topPad + 5, leftPad + 38);
+            Print.printWhenPossible(MainLogic.isAutoAcceptOn ? ". Enabled" : " Disabled", topPad + 6, leftPad + 38);
         }
 
         public static void settingsMenu()
@@ -346,6 +350,26 @@ namespace Leauge_Auto_Accept
             displayChamps();
         }
 
+        public static void laneSelector()
+        {
+            Print.canMovePos = false;
+
+            totalRows = SizeHandler.WindowHeight - 2;
+
+            currentWindow = "laneSelector";
+            windowType = "grid";
+
+            Navigation.currentInput = "";
+
+            Console.Clear();
+
+            Console.WriteLine("Please select a lane:");
+            selectedLane = Console.ReadLine();
+
+            updateCurrentFilter();
+
+        }
+
         private static void displayChamps()
         {
             Navigation.currentPos = 0;
@@ -500,6 +524,10 @@ namespace Leauge_Auto_Accept
             else if (currentWindow == "spellSelector")
             {
                 displaySpells();
+            }
+            else if (currentWindow == "laneSelector")
+            {
+                mainScreen();
             }
             Navigation.currentPos = 0;
             string consoleLine = "Search: " + Navigation.currentInput;

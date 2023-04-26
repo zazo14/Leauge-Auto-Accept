@@ -15,6 +15,7 @@ namespace Leauge_Auto_Accept
 
         public static string currentInput = "";
 
+
         public static void ReadKeys()
         {
             while (true)
@@ -395,18 +396,21 @@ namespace Leauge_Auto_Accept
             }
 
             {
+                
+
                 int positionLeft = 0;
                 int positionTop = 0;
-                if (UI.currentWindow == "mainScreen" && consolePosLast > 5)
+                if (UI.currentWindow == "mainScreen" && consolePosLast > 6)
                 {
+
                     // Handles the weird main menu navigation
-                    if (consolePosLast == 6)
+                    if (consolePosLast == 7)
                     {
                         //Console.SetCursorPosition(UI.leftPad, SizeHandler.HeightCenter + 6);
                         positionLeft = UI.leftPad;
                         positionTop = SizeHandler.HeightCenter + 6;
                     }
-                    else if (consolePosLast == 7)
+                    else if (consolePosLast == 8)
                     {
                         //Console.SetCursorPosition(UI.leftPad + 40, SizeHandler.HeightCenter + 6);
                         positionLeft = UI.leftPad + 40;
@@ -455,16 +459,16 @@ namespace Leauge_Auto_Accept
                     lastPosMainNav = currentPos;
                 }
 
-                if (UI.currentWindow == "mainScreen" && currentPos > 5)
+                if (UI.currentWindow == "mainScreen" && currentPos > 6)
                 {
                     // Handles the weird main menu navigation
-                    if (currentPos == 6)
+                    if (currentPos == 7)
                     {
                         //Console.SetCursorPosition(UI.leftPad, SizeHandler.HeightCenter + 6);
                         positionLeft = UI.leftPad;
                         positionTop = SizeHandler.HeightCenter + 6;
                     }
-                    else if (currentPos == 7)
+                    else if (currentPos == 8)
                     {
                         //Console.SetCursorPosition(UI.leftPad + 40, SizeHandler.HeightCenter + 6);
                         positionLeft = UI.leftPad + 40;
@@ -511,6 +515,7 @@ namespace Leauge_Auto_Accept
             double row1 = pos / UI.totalRows;       //  1.111111111111111
             double row2 = Math.Floor(row1);         //  1
 
+
             // Calculate the current column
             double column1 = row2 * UI.totalRows;   //  27
             double column2 = pos - column1;         //  3
@@ -518,12 +523,11 @@ namespace Leauge_Auto_Accept
             // Convert to integer, caclulate column width
             int column = Convert.ToInt32(column2);
             int row = Convert.ToInt32(row2) * UI.columnSize;
-
+ 
             if (column < 0)
                 column = 0;
             if (row < 0)
                 row = 0;
-
             return new int[] { column + UI.topPad, row + UI.leftPad };
         }
 
@@ -580,32 +584,35 @@ namespace Leauge_Auto_Accept
             switch (currentPos)
             {
                 case 0:
+                    UI.laneSelector();
+                    break;
+                case 1:
                     UI.currentChampPicker = 0;
                     UI.champSelector();
                     break;
-                case 1:
+                case 2:
                     UI.currentChampPicker = 1;
                     UI.champSelector();
                     break;
-                case 2:
+                case 3:
                     UI.currentSpellSlot = 0;
                     UI.spellSelector();
                     break;
-                case 3:
+                case 4:
                     UI.currentSpellSlot = 1;
                     UI.spellSelector();
                     break;
-                case 4:
+                case 5:
                     UI.chatMessagesWindow();
                     break;
-                case 5:
+                case 6:
                     Settings.toggleAutoAcceptSetting();
                     UI.toggleAutoAcceptSettingUI();
                     break;
-                case 6:
+                case 7:
                     UI.settingsMenu();
                     break;
-                case 7:
+                case 8:
                     UI.infoMenu();
                     break;
             }

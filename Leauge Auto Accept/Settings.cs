@@ -3,19 +3,28 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using System.Threading;
 
 namespace Leauge_Auto_Accept
 {
     internal class Settings
     {
+        public List<LaneSettings> laneSettingsList = new List<LaneSettings>();
 
-        
-        public static LaneSettings topLaneSettings = new LaneSettings();
-        public static LaneSettings botLaneSettings = new LaneSettings();
-        public static LaneSettings supportLaneSettings = new LaneSettings();
-        public static LaneSettings midLaneSettings = new LaneSettings();
-        public static LaneSettings jungleLaneSettings = new LaneSettings();
+        public static LaneSettings topLaneSettings = new LaneSettings("Top");
+        public static LaneSettings botLaneSettings = new LaneSettings("Bot");
+        public static LaneSettings supportLaneSettings = new LaneSettings("Support");
+        public static LaneSettings midLaneSettings = new LaneSettings("Mid");
+        public static LaneSettings jungleLaneSettings = new LaneSettings("Jungle");
 
+        public Settings()
+        {
+            laneSettingsList.Add(topLaneSettings);
+            laneSettingsList.Add(botLaneSettings);
+            laneSettingsList.Add(supportLaneSettings);
+            laneSettingsList.Add(midLaneSettings);
+            laneSettingsList.Add(jungleLaneSettings);
+        }
 
 
         public static string[] currentChamp = { "None", "0" };
@@ -102,9 +111,8 @@ namespace Leauge_Auto_Accept
 
         public static void saveSelectedChamp()
         {
-            Console.Clear();
-            Console.WriteLine("Please select lane:");
-            string lane = Console.ReadLine();
+
+
             List<itemList> champsFiltered = new List<itemList>();
             if ("none".Contains(Navigation.currentInput.ToLower()))
             {
@@ -139,10 +147,11 @@ namespace Leauge_Auto_Accept
                     name = champsFiltered[Navigation.currentPos].name;
                     id = champsFiltered[Navigation.currentPos].id;
                 }
-
-                LaneSettings currentLaneSettings = getLaneSettings(lane);
+                LaneSettings currentLaneSettings = getLaneSettings(UI.selectedLane);
+                
                 if (UI.currentChampPicker == 0)
                 {
+
                     currentLaneSettings.ChampName = name;
                     currentLaneSettings.ChampId = id;
                 }
@@ -192,10 +201,8 @@ namespace Leauge_Auto_Accept
 
         public static void saveSelectedSpell()
         {
-            Console.Clear();
-            Console.WriteLine("Please select lane:");
-            string lane = Console.ReadLine();
-            LaneSettings currentLaneSettings = getLaneSettings(lane);
+
+            LaneSettings currentLaneSettings = getLaneSettings(UI.selectedLane);
             List<itemList> spellsFiltered = new List<itemList>();
             if ("none".Contains(Navigation.currentInput.ToLower()))
             {
@@ -301,29 +308,35 @@ namespace Leauge_Auto_Accept
 
         public static void settingsSave()
         {
-            string config =
-                "champName:" + currentChamp[0] +
-                ",champId:" + currentChamp[1] +
-                ",banName:" + currentBan[0] +
-                ",banId:" + currentBan[1] +
-                ",spell1Name:" + currentSpell1[0] +
-                ",spell1Id:" + currentSpell1[1] +
-                ",spell2Name:" + currentSpell2[0] +
-                ",spell2Id:" + currentSpell2[1] +
-                ",autoAcceptOn:" + shouldAutoAcceptbeOn +
-                ",preloadData:" + preloadData +
-                ",instaLock:" + instaLock +
-                ",lockDelay:" + lockDelay +
-                ",autoPickOrderTrade:" + autoPickOrderTrade +
-                ",disableUpdateCheck:" + disableUpdateCheck +
-                ",chatMessages:" + encodeMessagesIntoBase64();
+            Settings settings = new Settings();
+            StringBuilder sb = new StringBuilder();
+            foreach (LaneSettings laneSettings in settings.laneSettingsList)
+            {
+                sb.Append(laneSettings.Lane + ":");
+                sb.Append("champName=" + laneSettings.ChampName + ",");
+                sb.Append("champId=" + laneSettings.ChampId + ",");
+                sb.Append("banName=" + laneSettings.BanName + ",");
+                sb.Append("banId=" + laneSettings.BanId + ",");
+                sb.Append("spell1Name=" + laneSettings.Spell1Name + ",");
+                sb.Append("spell1Id=" + laneSettings.Spell1Id + ",");
+                sb.Append("spell2Name=" + laneSettings.Spell2Name + ",");
+                sb.Append("spell2Id=" + laneSettings.Spell2Id + ",");
+                sb.Append("autoAcceptOn=" + Settings.shouldAutoAcceptbeOn + ",");
+                sb.Append("preloadData=" + Settings.preloadData + ",");
+                sb.Append("instaLock=" + Settings.instaLock + ",");
+                sb.Append("lockDelay=" + Settings.lockDelay + ",");
+                sb.Append("autoPickOrderTrade=" + Settings.autoPickOrderTrade + ",");
+                sb.Append("disableUpdateCheck=" + Settings.disableUpdateCheck + ",");
+                sb.Append("chatMessages=" + encodeMessagesIntoBase64() + "\n");
+            }
 
             string dirParameter = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"\Leauge Auto Accept Config.txt";
             using (StreamWriter m_WriterParameter = new StreamWriter(dirParameter, false))
             {
-                m_WriterParameter.Write(config);
+                m_WriterParameter.Write(sb.ToString());
             }
         }
+
 
         public static void toggleAutoAcceptSetting()
         {
@@ -349,69 +362,82 @@ namespace Leauge_Auto_Accept
             File.Delete(dirParameter);
         }
 
-        public static void loadSettings()
+        public static void loadSettings(LaneSettings laneSettings)
         {
             string dirParameter = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"\Leauge Auto Accept Config.txt";
             if (File.Exists(dirParameter))
             {
                 string text = File.ReadAllText(dirParameter);
-                string[] commas = text.Split(',');
-                foreach (var comma in commas)
+
+                string[] lanes = text.Split('\n');
+                foreach (var lane in lanes)
                 {
-                    string[] columns = comma.Split(':');
-                    switch (columns[0])
+                    string[] laneData = lane.Split(':');
+
+                    if (laneData[0] != laneSettings.Lane)
                     {
-                        case "champName":
-                            currentChamp[0] = columns[1];
-                            break;
-                        case "champId":
-                            currentChamp[1] = columns[1];
-                            break;
-                        case "banName":
-                            currentBan[0] = columns[1];
-                            break;
-                        case "banId":
-                            currentBan[1] = columns[1];
-                            break;
-                        case "spell1Name":
-                            currentSpell1[0] = columns[1];
-                            break;
-                        case "spell1Id":
-                            currentSpell1[1] = columns[1];
-                            break;
-                        case "spell2Name":
-                            currentSpell2[0] = columns[1];
-                            break;
-                        case "spell2Id":
-                            currentSpell2[1] = columns[1];
-                            break;
-                        case "lockDelay":
-                            lockDelay = Int32.Parse(columns[1]);
-                            lockDelayString = columns[1];
-                            break;
-                        case "autoAcceptOn":
-                            shouldAutoAcceptbeOn = Boolean.Parse(columns[1]);
-                            break;
-                        case "preloadData":
-                            preloadData = Boolean.Parse(columns[1]);
-                            break;
-                        case "instaLock":
-                            instaLock = Boolean.Parse(columns[1]);
-                            break;
-                        case "disableUpdateCheck":
-                            disableUpdateCheck = Boolean.Parse(columns[1]);
-                            break;
-                        case "autoPickOrderTrade":
-                            autoPickOrderTrade = Boolean.Parse(columns[1]);
-                            break;
-                        case "chatMessages":
-                            decodeMessagesFromBase64(columns[1]);
-                            updateChatMessagesToggle();
-                            break;
+                        continue;
+                    }
+                    string[] settings = laneData[1].Split(',');
+                    foreach (var setting in settings)
+                    {
+
+                        string[] columns = setting.Split('=');
+                        switch (columns[0])
+                        {
+                            case "champName":
+                                laneSettings.ChampName = columns[1];
+                                break;
+                            case "champId":
+                                laneSettings.ChampId = columns[1];
+                                break;
+                            case "banName":
+                                laneSettings.BanName = columns[1];
+                                break;
+                            case "banId":
+                                laneSettings.BanId = columns[1];
+                                break;
+                            case "spell1Name":
+                                laneSettings.Spell1Name = columns[1];
+                                break;
+                            case "spell1Id":
+                                laneSettings.Spell1Id = columns[1];
+                                break;
+                            case "spell2Name":
+                                laneSettings.Spell2Name = columns[1];
+                                break;
+                            case "spell2Id":
+                                laneSettings.Spell2Id = columns[1];
+                                break;
+                            case "lockDelay":
+                                Settings.lockDelay = Int32.Parse(columns[1]);
+                                Settings.lockDelayString = columns[1];
+                                break;
+                            case "autoAcceptOn":
+                                Settings.shouldAutoAcceptbeOn = Boolean.Parse(columns[1]);
+                                break;
+                            case "preloadData":
+                                Settings.preloadData = Boolean.Parse(columns[1]);
+                                break;
+                            case "instaLock":
+                                Settings.instaLock = Boolean.Parse(columns[1]);
+                                break;
+                            case "disableUpdateCheck":
+                                Settings.disableUpdateCheck = Boolean.Parse(columns[1]);
+                                break;
+                            case "autoPickOrderTrade":
+                                Settings.autoPickOrderTrade = Boolean.Parse(columns[1]);
+                                break;
+                            case "chatMessages":
+                                decodeMessagesFromBase64(columns[1]);
+                                updateChatMessagesToggle();
+                                break;
+                        }
                     }
                     saveSettings = true;
                 }
             }
         }
+
     }
 }
